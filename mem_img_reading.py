@@ -7,12 +7,18 @@ import os
 path_to_sat_img = "D:/Desktop/data/cropped/train/sat/"
 path_to_gt_img = "D:/Desktop/data/cropped/train/gt/"
 
-# Define image size.
+# Define image size, for verifications and reshaping.
 img_size = 128
 
 # Define empty lists for loops
 sat_data = []
 gt_data = []
+
+# Define empty list to store a single main label for each patch.
+patch_label_list = []
+
+# Define empty list for quick verification of filename vs label associated.
+filename_list = []
 
 # Define counting vars for verification.
 count_sat = 0
@@ -20,7 +26,7 @@ count_gt = 0
 
 """ First loop on cropped satellite images"""
 
-# Read all data files names for first loop on sat data.
+# Read all data files names for first loop on sat images.
 input_filenames_sat = [f for f in os.listdir(path_to_sat_img) if f.endswith('.tif')]
 # Loop, for each input image.
 for input_filename in input_filenames_sat:
@@ -46,31 +52,41 @@ feats = feats.reshape(feats.shape[0], img_size, img_size, 3)
 
 """ Second loop on cropped ground truth images"""
 
-# Read all data files names for first loop on ground truth data.
+# Read all data files names for first loop on ground truth images.
 input_filenames_gt = [f for f in os.listdir(path_to_gt_img) if f.endswith('.tif')]
 # Loop, for each input image.
 for input_filename in input_filenames_gt:
     
-    # Open input image, convert to np array.
+    # Open input image, convert to greyscale first, then np array.
     img_gt = np.array(Image.open(path_to_gt_img+input_filename).convert("L")) 
-    # Check if the image has a valid shape, get RGB values and store into list.
+    # Check if the image has a valid shape, get greyscale value and store into list.
     if((img_gt.shape[0]==img_size) and (img_gt.shape[1] ==img_size)):
         gt_data.append(img_gt)
-    
+        filename_list.append(input_filename)
         count_gt += 1
-
+   
 print(count_gt)
 
 # Convert list to np array.        
-labels = np.array(gt_data)
+pixel_lvl_labels = np.array(gt_data)
 
+# Flatten ground truth pixel level labels, store most occurring value for each patch.
+for data in xrange(len(pixel_lvl_labels)):
+    patch_label_list.append(np.bincount(np.ravel(pixel_lvl_labels[data])).argmax())
 
-sample_id = 120
+# Print a sample patch to see if we did good.
+sample_id = 0
 sample_img = feats[sample_id]
-sample_lbl = labels[sample_id]
-print("Label:", sample_lbl)
-print("Image:", sample_img)
+sample_pix_labels = pixel_lvl_labels[sample_id]
+sample_patch_label = patch_label_list[sample_id]
+sample_filename = filename_list[sample_id]
+
+print("Filename:", sample_filename)
+print("Pixel values):", sample_img)
+print("Pixel level labels:", sample_pix_labels)
+print("Patch level label:", sample_patch_label)
 # some stats
-print([sample_img.min(), sample_img.max(), sample_img.shape])
+#print([sample_img.min(), sample_img.max(), sample_img.shape])
+
 
 
