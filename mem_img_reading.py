@@ -63,7 +63,7 @@ for input_filename in input_filenames_gt:
     
     # Open input image, convert to greyscale first, then np array.
     img_gt = np.array(Image.open(path_to_gt_img+input_filename).convert("L")) 
-    # Check if the image has a valid shape, get greyscale value and store into list.
+    # Check if the image has a valid shape, get greyscale values (= pixels label) and store into list.
     if((img_gt.shape[0]==img_size) and (img_gt.shape[1] ==img_size)):
         gt_data.append(img_gt)
         filename_list.append(input_filename)
