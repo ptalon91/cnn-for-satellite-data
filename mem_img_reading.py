@@ -1,4 +1,4 @@
-"""  This program read the satellite data patches created from the Vaihingen 
+"""  This program reads the satellite data patches created from the Vaihingen 
 dataset, gets the pixels values, creates pixels labels and gets a main label for
 each patch. """
 
