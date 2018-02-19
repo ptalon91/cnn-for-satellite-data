@@ -52,14 +52,10 @@ input_filenames_gt = [f for f in os.listdir(path_to_gt_img) if f.endswith('.tif'
 for input_filename in input_filenames_gt:
     
     # Open input image, convert to np array.
-    img_gt = np.array(Image.open(path_to_gt_img+input_filename))
-    
+    img_gt = np.array(Image.open(path_to_gt_img+input_filename).convert("L")) 
     # Check if the image has a valid shape, get RGB values and store into list.
     if((img_gt.shape[0]==img_size) and (img_gt.shape[1] ==img_size)):
-        r = img_gt[:,:,0]
-        g = img_gt[:,:,1]
-        b = img_gt[:,:,2]
-        gt_data.append([r,g,b])
+        gt_data.append(img_gt)
     
         count_gt += 1
 
@@ -69,12 +65,11 @@ print(count_gt)
 labels = np.array(gt_data)
 
 
-
-
-
-sample_id = 12
+sample_id = 120
 sample_img = feats[sample_id]
-print(sample_img)
+sample_lbl = labels[sample_id]
+print("Label:", sample_lbl)
+print("Image:", sample_img)
 # some stats
 print([sample_img.min(), sample_img.max(), sample_img.shape])
 
