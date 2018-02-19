@@ -1,3 +1,7 @@
+"""  This program read the satellite data patches created from the Vaihingen 
+dataset, gets the pixels values, creates pixels labels and gets a main label for
+each patch. """
+
 from PIL import Image
 import numpy as np
 import os
