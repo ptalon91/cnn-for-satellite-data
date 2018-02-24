@@ -2,9 +2,15 @@
 dataset, gets the pixels values, creates pixels labels and gets a main label for
 each patch. """
 
+from __future__ import print_function
 from PIL import Image
 import numpy as np
 import os
+import keras
+from keras.models import Sequential
+from keras.layers import Dense, Dropout, Flatten
+from keras.layers import Conv2D, MaxPooling2D
+from keras import backend as K
 
 # Parameters...
 # Paths to data.
@@ -75,9 +81,31 @@ print(count_gt)
 pixel_lvl_labels = np.array(gt_data)
 
 # Flatten ground truth pixel level labels, store most occurring value for each patch.
-for data in xrange(len(pixel_lvl_labels)):
+for data in range(len(pixel_lvl_labels)):
     patch_label_list.append(np.bincount(np.ravel(pixel_lvl_labels[data])).argmax())
 
+    
+# Replace label greyscale values by [0, 1, 2, 3, ...]...
+# We need to do that in order to create one hot vectors later.
+
+# Get unique label values from patch_label_list.
+labels_list_values = set(patch_label_list)
+
+# Define empty list where we can put these values, and make them iterable.
+labels_list = []
+
+# Loop to put the values in the list.
+for label in labels_list_values:
+    labels_list.append(label)
+
+# Loop to replace label greyscale values by [0, 1, 2, 3, ...]
+for label in range(len(labels_list)):
+    for patch_label in range(len(patch_label_list)):
+        if patch_label_list[patch_label] == labels_list[label]:
+            patch_label_list[patch_label] = label
+            
+#print(patch_label_list)
+    
 # Print a sample patch to see if we did good.
 sample_id = 0
 sample_img = feats[sample_id]
@@ -86,11 +114,87 @@ sample_patch_label = patch_label_list[sample_id]
 sample_filename = filename_list[sample_id]
 
 print("Filename:", sample_filename)
-print("Pixel values):", sample_img)
+print("Pixel values:", sample_img)
 print("Pixel level labels:", sample_pix_labels)
 print("Patch level label:", sample_patch_label)
+print("Input shape:", sample_img.shape)
+
+print(len(set(patch_label_list)))
+#print(set(patch_label_list))
 # some stats
 #print([sample_img.min(), sample_img.max(), sample_img.shape])
+
+
+""" CNN example adapted from:
+https://github.com/keras-team/keras/blob/master/examples/mnist_cnn.py
+
+It seems to work for now, but poor accuracy with the data we just created.
+Data augmentation could be a solution. 
+Also, the different layers of the models need to be adapted.
+"""
+
+batch_size = 64
+num_classes = len(labels_list_values)
+epochs = 50
+train_size = 2500
+
+# input image dimensions
+img_rows, img_cols = 128, 128
+
+# the data, split between train and test sets
+x_train = np.array(feats[:train_size])
+y_train = np.array(patch_label_list[:train_size])
+x_test = np.array(feats[train_size:])
+y_test = np.array(patch_label_list[train_size:])
+
+input_shape = (img_rows, img_cols, 3)
+
+x_train = x_train.astype('float32')
+x_test = x_test.astype('float32')
+x_train /= 255
+x_test /= 255
+#print('x_train shape:', x_train)
+#print(y_train.shape[0], 'train samples')
+#print(y_test.shape[0], 'test samples')
+
+# convert class vectors to binary class matrices
+y_train = keras.utils.to_categorical(y_train, num_classes)
+y_test = keras.utils.to_categorical(y_test, num_classes)
+
+model = Sequential()
+model.add(Conv2D(32, kernel_size=(3, 3),
+                 activation='relu',
+                 input_shape=input_shape))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+model.add(Flatten())
+model.add(Dense(128, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(num_classes, activation='softmax'))
+
+model.compile(loss=keras.losses.categorical_crossentropy,
+              optimizer=keras.optimizers.Adadelta(),
+              metrics=['accuracy'])
+
+model.fit(x_train, y_train,
+          batch_size=batch_size,
+          epochs=epochs,
+          verbose=1,
+          validation_data=(x_test, y_test))
+score = model.evaluate(x_test, y_test, verbose=0)
+print('Test loss:', score[0])
+print('Test accuracy:', score[1])
+
+
+
+
+
+
+
+
+
+
 
 
 

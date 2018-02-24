@@ -15,10 +15,8 @@ import sys, os
 # Paths to data.
 path_to_sat_img = "D:/Desktop/data/original/train/sat/"
 path_to_gt_img = "D:/Desktop/data/original/train/gt/"
-
 # Define patch size for image cropping.
 patch_size = 128
-
 # Read all data files names for loop.
 input_filenames = [f for f in os.listdir(path_to_gt_img) if f.endswith('.tif')]
 
