@@ -12,6 +12,6 @@ Prerequisites:
 
 Steps:
 - Data preprocessing (crop series of smaller images from the patches, determine the preponderant label for each image, for training and validation data).
-- Simple convolutional neural network (Make the model guess a single label per image).
-- Simple convolution-deconvolution neural network (Make the model guess a label for each pixel of the image).
+- Simple convolutional neural network (Make the model predict a single label per image).
+- Simple convolution-deconvolution neural network (Make the model predict a label for each pixel of the image).
 - Evaluate the performances.
